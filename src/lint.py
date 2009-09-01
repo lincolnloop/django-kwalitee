@@ -73,10 +73,10 @@ def run(file_or_dir):
             for name in files:
                 filepath = os.path.join(root, name)
                 if filepath.endswith(".py"):
-                    total = lint(filepath)
+                    run_total = lint(filepath)
                     # pylint does not always return a numeric value
-                    if isinstance(total, float):
-                        total += lint(filepath)
+                    if isinstance(run_total, float):
+                        total += run_total
                         file_count += 1
     elif file_or_dir.endswith(".py"):
         total = lint(file_or_dir)
