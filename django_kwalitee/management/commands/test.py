@@ -49,7 +49,7 @@ class Command(BaseCommand):
             local_apps = []
             for app in get_apps():
                 app_label = app.__name__.split('.')[-2]
-                if not app_label in settings.EXCLUDE_FROM_LOCAL_TESTS:
+                if not app_label in settings.KWALITEE_LOCAL_EXCLUDES:
                     local_apps.append(app_label)
             test_labels = tuple(local_apps)
         

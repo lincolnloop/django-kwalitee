@@ -8,17 +8,6 @@ from django.db.models import get_app, get_apps
 
 from django_kwalitee.testrunners import get_runner
 
-def get_coverage_modules(app_module):
-    """
-    Returns a list of modules to report coverage info for, given an
-    application module.
-    """
-    app_path = app_module.__name__.split('.')[:-1]
-    coverage_module = __import__('.'.join(app_path), {}, {}, app_path[-1])
-
-    return [coverage_module] + [attr for name, attr in
-        getmembers(coverage_module) if ismodule(attr) and name != 'tests']
-
 def get_all_coverage_modules(app_module):
     """
     Returns all possible modules to report coverage on, even if they
@@ -37,7 +26,7 @@ def get_all_coverage_modules(app_module):
             if fyle.lower().endswith('.py'):
                 mod_name = fyle[:-3].lower()
                 mod_str = '.'.join(root_path + [mod_name])
-                for regex in getattr(settings, 'EXCLUDE_COVERAGE_REGEXES', []):
+                for regex in getattr(settings, 'KWALITEE_COVERAGE_EXCLUDES', []):
                     if not re.search(regex, mod_str):
                         try:
                             mod = __import__(mod_str, {}, {}, mod_name)
