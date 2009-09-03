@@ -45,14 +45,17 @@ def lint(module):
     for line in pout:
         if re.match(r'^\*{13} Module', line):
             print '\n', line[:-1] # remove newline
-        if re.match(r'[C|R|W|E|F]....:.', line):
+        elif re.match(r'[C|R|W|E|F]....:.', line):
             print line[:-1] # remove newline
-        if "Your code has been rated at" in line:
+        elif re.match(r'\|code      \|\d+', line):
+            loc = re.findall(r'\|code      \|(\d+)', line)[0]
+            print 'Lines of code: %s' % loc
+        elif "Your code has been rated at" in line:
             print line[:-1]
             score = re.findall("-?\d{1,2}.\d\d", line)[0]
-            return float(score)
+            return (float(score), int(loc))
 
-    return None
+    return (None, 0)
 
 
 def run(file_or_dir):
@@ -63,6 +66,7 @@ def run(file_or_dir):
     (directory or single file).
     """
     total = 0
+    loc = 0
     file_count = 0
     if os.path.isdir(file_or_dir):
         # find all .py files within the directory
@@ -73,22 +77,23 @@ def run(file_or_dir):
             for name in files:
                 filepath = os.path.join(root, name)
                 if filepath.endswith(".py"):
-                    run_total = lint(filepath)
+                    run_total, run_loc = lint(filepath)
                     # pylint does not always return a numeric value
                     if isinstance(run_total, float):
-                        total += run_total
+                        total += run_total * run_loc
+                        loc += run_loc
                         file_count += 1
     elif file_or_dir.endswith(".py"):
-        total = lint(file_or_dir)
+        total, loc = lint(file_or_dir)
         file_count = 1
     
     else:
         sys.exit("%s does not exist or is not a Python source" % file_or_dir)
             
     print "==" * 50
-    print "%d modules found"% file_count
-    average = total / file_count
-    print "AVERAGE SCORE = %.02f"% average
+    print "%d modules found containing %s lines of code"% (file_count, loc)
+    average = total / loc
+    print "WEIGHTED AVERAGE RATING = %.02f"% average
     if average < MINIMUM_SCORE:
         # return error if rating is too low
         sys.exit(1)
