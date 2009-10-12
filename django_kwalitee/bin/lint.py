@@ -14,7 +14,7 @@ DEFAULT_FLAGS = {
     '--include-ids': 'yes',
     '--no-docstring-rgx': '__.*__\|get_absolute_url',
     '--good-names': 'i,j,k,v,qs,urlpatterns,register',
-    '--generated-members': 'objects,DoesNotExist,id,pk'
+    '--generated-members': 'objects,DoesNotExist,id,pk,_default_manager,_meta'
 }
 
 def lint(module):
@@ -26,15 +26,19 @@ def lint(module):
     flags = {}
     flags.update(DEFAULT_FLAGS)
     if 'urls' in module:
-        # disable wildcard import errors
-        flags['--disable-msg'] = 'W0614,W0401'
+        # disable wildcard import errors and missing docstring
+        flags['--disable-msg'] = 'W0614,W0401,C0111'
     elif module.endswith('admin.py'):
         # admin.ModelAdmin has 37 public methods
         flags['--max-public-methods'] = '40'
     elif 'tests' in module:
         # test classes tend to get lots of methods
         flags['--max-public-methods'] = '40'
-        flags['--good-names'] += ',setUp,tearDown,r,c'
+        # allow mixedCase methods
+        flags['--method-rgx'] = "'[a-zA-Z0-9]+$'"
+        flags['--good-names'] += ',r,c'
+        # ignore missing docstrings
+        flags['--disable-msg'] = 'C0111'
     flags_string = ''
     for key, value in flags.items():
         flags_string += '%s=%s ' % (key, value)
