@@ -26,15 +26,19 @@ def get_all_coverage_modules(app_module):
             if fyle.lower().endswith('.py'):
                 mod_name = fyle[:-3].lower()
                 mod_str = '.'.join(root_path + [mod_name])
+
+                matches = True
                 for regex in getattr(settings, 'KWALITEE_COVERAGE_EXCLUDES', []):
-                    if not re.search(regex, mod_str):
-                        try:
-                            mod = __import__(mod_str, {}, {}, mod_name)
-                        except ImportError:
-                            pass
-                        else:
-                    
-                            mod_list.append(mod)
+                    if re.search(regex, mod_str):
+                        matches = False
+                        break
+
+                if matches:
+                    try:
+                        mod = __import__(mod_str, {}, {}, mod_name)
+                        mod_list.append(mod)
+                    except ImportError:
+                        pass
 
     return mod_list
 
